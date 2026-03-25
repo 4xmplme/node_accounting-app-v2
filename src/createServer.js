@@ -2,8 +2,10 @@
 
 const express = require('express');
 
+let nextId = 1;
+
 function uuid() {
-  return Date.now();
+  return nextId++;
 }
 
 class UsersService {
@@ -134,26 +136,26 @@ class UsersController {
     this.service = service;
   }
 
-  getAll = async (req, res) => {
-    const users = await this.service.getAll();
+  getAll = (req, res) => {
+    const users = this.service.getAll();
 
     res.json(users);
   };
 
-  create = async (req, res) => {
+  create = (req, res) => {
     const { name } = req.body;
 
     if (!name) {
       return res.sendStatus(400);
     }
 
-    const user = await this.service.create(name);
+    const user = this.service.create(name);
 
     res.status(201).json(user);
   };
 
-  getOne = async (req, res) => {
-    const user = await this.service.getById(Number(req.params.id));
+  getOne = (req, res) => {
+    const user = this.service.getById(Number(req.params.id));
 
     if (!user) {
       return res.sendStatus(404);
@@ -162,8 +164,8 @@ class UsersController {
     res.json(user);
   };
 
-  deleteOne = async (req, res) => {
-    const user = await this.service.deleteById(Number(req.params.id));
+  deleteOne = (req, res) => {
+    const user = this.service.deleteById(Number(req.params.id));
 
     if (!user) {
       return res.sendStatus(404);
@@ -172,11 +174,11 @@ class UsersController {
     res.sendStatus(204);
   };
 
-  update = async (req, res) => {
+  update = (req, res) => {
     const id = Number(req.params.id);
     const { name } = req.body;
 
-    const user = await this.service.getById(id);
+    const user = this.service.getById(id);
 
     if (!user) {
       return res.sendStatus(404);
@@ -186,7 +188,7 @@ class UsersController {
       return res.sendStatus(400);
     }
 
-    const updatedUser = await this.service.update({ id, name });
+    const updatedUser = this.service.update({ id, name });
 
     res.json(updatedUser);
   };
@@ -200,10 +202,10 @@ class ExpensesController {
     this.userService = userService;
   }
 
-  getAll = async (req, res) => {
+  getAll = (req, res) => {
     const { userId, categories, from, to } = req.query;
 
-    const expenses = await this.expenseService.getAll({
+    const expenses = this.expenseService.getAll({
       userId: userId ? Number(userId) : undefined,
       categories,
       from,
@@ -213,10 +215,10 @@ class ExpensesController {
     res.json(expenses);
   };
 
-  create = async (req, res) => {
+  create = (req, res) => {
     const { userId, spentAt, title, amount, category, note } = req.body;
 
-    const user = await this.userService.getById(Number(userId));
+    const user = this.userService.getById(Number(userId));
 
     if (
       !userId ||
@@ -224,13 +226,12 @@ class ExpensesController {
       !spentAt ||
       !title ||
       amount === undefined ||
-      !category ||
-      !note
+      !category
     ) {
       return res.sendStatus(400);
     }
 
-    const expense = await this.expenseService.create({
+    const expense = this.expenseService.create({
       userId: Number(userId),
       spentAt,
       title,
@@ -242,8 +243,8 @@ class ExpensesController {
     res.status(201).json(expense);
   };
 
-  getOne = async (req, res) => {
-    const expense = await this.expenseService.getById(Number(req.params.id));
+  getOne = (req, res) => {
+    const expense = this.expenseService.getById(Number(req.params.id));
 
     if (!expense) {
       return res.sendStatus(404);
@@ -252,8 +253,8 @@ class ExpensesController {
     res.json(expense);
   };
 
-  deleteOne = async (req, res) => {
-    const expense = await this.expenseService.deleteById(Number(req.params.id));
+  deleteOne = (req, res) => {
+    const expense = this.expenseService.deleteById(Number(req.params.id));
 
     if (!expense) {
       return res.sendStatus(404);
@@ -262,16 +263,14 @@ class ExpensesController {
     res.sendStatus(204);
   };
 
-  update = async (req, res) => {
-    const existingExpense = await this.expenseService.getById(
-      Number(req.params.id),
-    );
+  update = (req, res) => {
+    const existingExpense = this.expenseService.getById(Number(req.params.id));
 
     if (!existingExpense) {
       return res.sendStatus(404);
     }
 
-    const updatedExpense = await this.expenseService.update({
+    const updatedExpense = this.expenseService.update({
       ...existingExpense,
       ...req.body,
       id: existingExpense.id,
